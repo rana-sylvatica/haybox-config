@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, GameModeId, GameModeConfig, ButtonRemap, SocdPair } from 'haybox-webserial';
+import { Button, GameModeId, GameModeConfig, ButtonRemap } from 'haybox-webserial';
 
 interface GameModeEditorProps {
     mode: GameModeConfig;
