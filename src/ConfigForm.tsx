@@ -1,5 +1,6 @@
-import React, { useState } from 'react';  // Add useState to the import
+import { useState } from 'react';
 import { Config, GameModeId, GameModeConfig, HayBoxDevice } from 'haybox-webserial';
+import GameModeEditor from './GameModeEditor';
 
 interface ConfigFormProps {
     config: Config;
@@ -35,18 +36,8 @@ const ConfigForm = ({ config, onConfigChange, device }: ConfigFormProps) => {
         setSaveError('');
 
         try {
-            // Create a proper Config message
             const protoConfig = new Config({
-                gameModeConfigs: config.gameModeConfigs,
-                communicationBackendConfigs: config.communicationBackendConfigs,
-                customModes: config.customModes,
-                keyboardModes: config.keyboardModes,
-                rgbConfigs: config.rgbConfigs,
-                defaultBackendConfig: config.defaultBackendConfig,
-                defaultUsbBackendConfig: config.defaultUsbBackendConfig,
-                rgbBrightness: config.rgbBrightness,
-                meleeOptions: config.meleeOptions,
-                projectMOptions: config.projectMOptions
+                ...config // This will copy all fields from the existing config
             });
 
             const success = await device.setConfig(protoConfig);
@@ -66,6 +57,25 @@ const ConfigForm = ({ config, onConfigChange, device }: ConfigFormProps) => {
         }
     };
 
+    const handleGameModeUpdate = (updatedMode: GameModeConfig) => {
+        const newConfigs = [...(config.gameModeConfigs || [])];
+        const index = newConfigs.findIndex(mode => 
+            mode.name === editingMode?.name && 
+            mode.modeId === editingMode?.modeId
+        );
+        
+        if (index >= 0) {
+            newConfigs[index] = updatedMode;
+        } else {
+            newConfigs.push(updatedMode);
+        }
+        
+        onConfigChange(new Config({
+            ...config,
+            gameModeConfigs: newConfigs
+        }));
+        setEditingMode(null);
+    };
 
     return (
         <div className="space-y-6">
@@ -112,67 +122,49 @@ const ConfigForm = ({ config, onConfigChange, device }: ConfigFormProps) => {
                                     <span className="font-medium">
                                         {(mode.name || GameModeId[mode.modeId] || `Mode ${index + 1}`) + ': '}
                                     </span>
-                               <span className="text-sm text-gray-500">
-                    {mode.buttonRemapping?.length || 0} remapped buttons
-                </span>
-            </div>
-            <div className="flex items-center space-x-2">
-                <button
-                    onClick={() => setEditingMode(mode)}
-                    className="px-3 py-1 text-blue-600 hover:text-blue-700"
-                >
-                    Edit
-                </button>
-                <button
-                    onClick={() => {
-                        if (confirm('Are you sure you want to delete this mode?')) {
-                            const newConfigs = config.gameModeConfigs?.filter((m, i) => i !== index) || [];
-                            onConfigChange({
-                                ...config,
-                                gameModeConfigs: newConfigs,
-                            });
-                        }
-                    }}
-                    className="px-3 py-1 text-red-600 hover:text-red-700"
-                >
-                    Delete
-                </button>
-            </div>
-        </div>
-    </div>
-))}
+                                    <span className="text-sm text-gray-500">
+                                        {mode.buttonRemapping?.length || 0} remapped buttons
+                                    </span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <button
+                                        onClick={() => setEditingMode(mode)}
+                                        className="px-3 py-1 text-blue-600 hover:text-blue-700"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (confirm('Are you sure you want to delete this mode?')) {
+                                                const newConfigs = config.gameModeConfigs?.filter((m, i) => i !== index) || [];
+                                                onConfigChange(new Config({
+                                                    ...config,
+                                                    gameModeConfigs: newConfigs,
+                                                }));
+                                            }
+                                        }}
+                                        className="px-3 py-1 text-red-600 hover:text-red-700"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                     
                     <button
-            className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-center text-gray-600 hover:border-gray-400 hover:text-gray-700"
-            onClick={createNewGameMode}
-        >
-            Add Game Mode
-        </button>
+                        className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-center text-gray-600 hover:border-gray-400 hover:text-gray-700"
+                        onClick={createNewGameMode}
+                    >
+                        Add Game Mode
+                    </button>
                 </div>
 
                 {/* Game Mode Editor Modal */}
                 {editingMode && (
                     <GameModeEditor
                         mode={editingMode}
-                        onSave={(updatedMode) => {
-                            const newConfigs = [...(config.gameModeConfigs || [])];
-                            const index = newConfigs.findIndex(m => 
-                                m.name === editingMode.name && 
-                                m.modeId === editingMode.modeId
-                            );
-                            
-                            if (index >= 0) {
-                                newConfigs[index] = updatedMode;
-                            } else {
-                                newConfigs.push(updatedMode);
-                            }
-                            
-                            onConfigChange({
-                                ...config,
-                                gameModeConfigs: newConfigs,
-                            });
-                            setEditingMode(null);
-                        }}
+                        onSave={handleGameModeUpdate}
                         onClose={() => setEditingMode(null)}
                     />
                 )}

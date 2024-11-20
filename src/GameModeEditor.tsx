@@ -1,4 +1,4 @@
-import React, { useState } from 'react';  // Add useState to the import
+import { useState } from 'react';
 import { Button, GameModeId, GameModeConfig, ButtonRemap } from 'haybox-webserial';
 
 interface GameModeEditorProps {
@@ -8,7 +8,14 @@ interface GameModeEditorProps {
 }
 
 const GameModeEditor = ({ mode, onSave, onClose }: GameModeEditorProps) => {
-    const [editedMode, setEditedMode] = useState<GameModeConfig>(mode);
+    const [editedMode, setEditedMode] = useState<GameModeConfig>(new GameModeConfig(mode));
+
+    const updateMode = (updates: Partial<GameModeConfig>) => {
+        setEditedMode(new GameModeConfig({
+            ...editedMode,
+            ...updates
+        }));
+    };
 
     const addRemapping = () => {
         const newRemap = new ButtonRemap({
@@ -16,10 +23,9 @@ const GameModeEditor = ({ mode, onSave, onClose }: GameModeEditorProps) => {
             activates: Button.BTN_UNSPECIFIED
         });
 
-        setEditedMode(new GameModeConfig({
-            ...editedMode,
+        updateMode({
             buttonRemapping: [...(editedMode.buttonRemapping || []), newRemap]
-        }));
+        });
     };
 
     const updateRemapping = (index: number, field: keyof ButtonRemap, value: number) => {
@@ -29,10 +35,9 @@ const GameModeEditor = ({ mode, onSave, onClose }: GameModeEditorProps) => {
             [field]: value
         });
         
-        setEditedMode(new GameModeConfig({
-            ...editedMode,
+        updateMode({
             buttonRemapping: newRemapping
-        }));
+        });
     };
 
     const removeRemapping = (index: number) => {

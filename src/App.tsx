@@ -1,4 +1,4 @@
-import React, { useState } from 'react';  // Add useState to the import
+import { useState } from 'react';
 import { HayBoxDevice, DeviceInfo, Config } from 'haybox-webserial';
 import ConfigForm from './ConfigForm';
 
