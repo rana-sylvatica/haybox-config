@@ -136,7 +136,7 @@ const ConfigForm = ({ config, onConfigChange, device }: ConfigFormProps) => {
                                     <button
                                         onClick={() => {
                                             if (confirm('Are you sure you want to delete this mode?')) {
-                                                const newConfigs = config.gameModeConfigs?.filter((m, i) => i !== index) || [];
+                                                const newConfigs = config.gameModeConfigs?.filter((_, i) => i !== index) || [];
                                                 onConfigChange(new Config({
                                                     ...config,
                                                     gameModeConfigs: newConfigs,

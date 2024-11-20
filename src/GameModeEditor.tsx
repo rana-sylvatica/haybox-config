@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, GameModeId, GameModeConfig, ButtonRemap } from 'haybox-webserial';
+import { Button, GameModeId, GameModeConfig, ButtonRemap, SocdPair } from 'haybox-webserial';
 
 interface GameModeEditorProps {
     mode: GameModeConfig;
@@ -11,6 +11,7 @@ const GameModeEditor = ({ mode, onSave, onClose }: GameModeEditorProps) => {
     const [editedMode, setEditedMode] = useState<GameModeConfig>(new GameModeConfig(mode));
 
     const updateMode = (updates: Partial<GameModeConfig>) => {
+        // Create a new GameModeConfig with the updates
         setEditedMode(new GameModeConfig({
             ...editedMode,
             ...updates
@@ -23,8 +24,10 @@ const GameModeEditor = ({ mode, onSave, onClose }: GameModeEditorProps) => {
             activates: Button.BTN_UNSPECIFIED
         });
 
+        const newRemappings = [...(editedMode.buttonRemapping || []), newRemap];
+        
         updateMode({
-            buttonRemapping: [...(editedMode.buttonRemapping || []), newRemap]
+            buttonRemapping: newRemappings
         });
     };
 
@@ -43,9 +46,8 @@ const GameModeEditor = ({ mode, onSave, onClose }: GameModeEditorProps) => {
     const removeRemapping = (index: number) => {
         const newRemapping = [...(editedMode.buttonRemapping || [])];
         newRemapping.splice(index, 1);
-        setEditedMode({
-            ...editedMode,
-            buttonRemapping: newRemapping,
+        updateMode({
+            buttonRemapping: newRemapping
         });
     };
 
@@ -64,7 +66,7 @@ const GameModeEditor = ({ mode, onSave, onClose }: GameModeEditorProps) => {
                     {/* Header */}
                     <div className="flex justify-between items-center border-b pb-4">
                         <h2 className="text-xl font-semibold text-gray-900">
-                            Edit Game Mode: {mode.name || GameModeId[mode.modeId]}
+                            Edit Game Mode: {editedMode.name || GameModeId[editedMode.modeId]}
                         </h2>
                         <button
                             onClick={onClose}
@@ -83,10 +85,7 @@ const GameModeEditor = ({ mode, onSave, onClose }: GameModeEditorProps) => {
                             <input
                                 type="text"
                                 value={editedMode.name || ''}
-                                onChange={(e) => setEditedMode({
-                                    ...editedMode,
-                                    name: e.target.value,
-                                })}
+                                onChange={(e) => updateMode({ name: e.target.value })}
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             />
                         </div>
