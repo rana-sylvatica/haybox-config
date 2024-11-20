@@ -3,13 +3,13 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main
+      - main  # or master, depending on your default branch
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout HayBox Config
         uses: actions/checkout@v3
 
       - name: Set up Node.js
@@ -24,9 +24,24 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Checkout Pages Repository
+        uses: actions/checkout@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          destination_dir: haybox-config  # This will create a subdirectory in your main site
+          repository: rana-sylvatica/rana-sylvatica.github.io  # Replace with your username
+          token: ${{ secrets.DEPLOY_TOKEN }}  # You'll need to create this
+          path: pages-repo
+
+      - name: Copy Build Files
+        run: |
+          rm -rf pages-repo/haybox-config
+          mkdir -p pages-repo/haybox-config
+          cp -r dist/* pages-repo/haybox-config/
+
+      - name: Commit and Push
+        run: |
+          cd pages-repo
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Update HayBox Config"
+          git push
