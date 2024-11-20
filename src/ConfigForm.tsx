@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react';  // Add useState to the import
 import { Config, GameModeId, GameModeConfig, HayBoxDevice } from 'haybox-webserial';
-import GameModeEditor from './GameModeEditor';
 
 interface ConfigFormProps {
     config: Config;
@@ -14,23 +13,35 @@ const ConfigForm = ({ config, onConfigChange, device }: ConfigFormProps) => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [saveError, setSaveError] = useState('');
 
+    const createNewGameMode = () => {
+        const newMode = new GameModeConfig({
+            modeId: GameModeId.MODE_UNSPECIFIED,
+            name: "New Mode",
+            buttonRemapping: [],
+            socdPairs: [],
+            activationBinding: [],
+            customModeConfig: 0,
+            keyboardModeConfig: 0,
+            rgbConfig: 0
+        });
+        setEditingMode(newMode);
+    };
+
     const saveToController = async () => {
-        if (!device) {
-            console.error('No device available');
-            return;
-        }
+        if (!device) return;
 
         setIsSaving(true);
         setSaveStatus('idle');
         setSaveError('');
 
         try {
+            // Create a proper Config message
             const protoConfig = new Config({
-                gameModeConfigs: config.gameModeConfigs || [],
-                communicationBackendConfigs: config.communicationBackendConfigs || [],
-                customModes: config.customModes || [],
-                keyboardModes: config.keyboardModes || [],
-                rgbConfigs: config.rgbConfigs || [],
+                gameModeConfigs: config.gameModeConfigs,
+                communicationBackendConfigs: config.communicationBackendConfigs,
+                customModes: config.customModes,
+                keyboardModes: config.keyboardModes,
+                rgbConfigs: config.rgbConfigs,
                 defaultBackendConfig: config.defaultBackendConfig,
                 defaultUsbBackendConfig: config.defaultUsbBackendConfig,
                 rgbBrightness: config.rgbBrightness,
@@ -54,6 +65,7 @@ const ConfigForm = ({ config, onConfigChange, device }: ConfigFormProps) => {
             setIsSaving(false);
         }
     };
+
 
     return (
         <div className="space-y-6">
@@ -131,20 +143,11 @@ const ConfigForm = ({ config, onConfigChange, device }: ConfigFormProps) => {
 ))}
                     
                     <button
-                        className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-center text-gray-600 hover:border-gray-400 hover:text-gray-700"
-                        onClick={() => {
-                            const newMode: GameModeConfig = {
-                                modeId: GameModeId.MODE_UNSPECIFIED,
-                                name: "New Mode",
-                                buttonRemapping: [],
-                                socdPairs: [],
-                                activationBinding: [],
-                            };
-                            setEditingMode(newMode);
-                        }}
-                    >
-                        Add Game Mode
-                    </button>
+            className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-center text-gray-600 hover:border-gray-400 hover:text-gray-700"
+            onClick={createNewGameMode}
+        >
+            Add Game Mode
+        </button>
                 </div>
 
                 {/* Game Mode Editor Modal */}

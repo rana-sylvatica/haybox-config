@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react';  // Add useState to the import
 import { HayBoxDevice, DeviceInfo, Config } from 'haybox-webserial';
-import ConfigForm from './ConfigForm';  // Import the new component
+import ConfigForm from './ConfigForm';
 
-const App = () => {  // Added the component function declaration
+const App = () => {
     const [device, setDevice] = useState<HayBoxDevice | null>(null);
     const [deviceInfo, setDeviceInfo] = useState<DeviceInfo | null>(null);
     const [config, setConfig] = useState<Config | null>(null);
@@ -49,10 +49,9 @@ const App = () => {  // Added the component function declaration
         setErrorMessage('');
     };
 
-    const handleConfigChange = async (newConfig: Config) => {
+     const handleConfigChange = (newConfig: Config) => {
         setConfig(newConfig);
     };
-
     return (
         <div className="min-h-screen bg-gray-50 py-6 px-4">
             <div className="max-w-3xl mx-auto">
@@ -143,13 +142,13 @@ const App = () => {  // Added the component function declaration
                 </div>
 
                 {/* Configuration Form */}
-                {status === 'connected' && config && (
-                    <ConfigForm 
-                        config={config} 
-                        onConfigChange={handleConfigChange}
-                        device={device}
-                    />
-                )}
+                {status === 'connected' && device && config && (
+            <ConfigForm 
+                config={config} 
+                onConfigChange={handleConfigChange}
+                device={device}
+            />
+        )}
             </div>
         </div>
     );
